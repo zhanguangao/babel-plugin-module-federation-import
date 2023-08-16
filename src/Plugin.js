@@ -24,6 +24,13 @@ function normalizeCustomName(originCustomName) {
   return originCustomName;
 }
 
+/** 判断该文件名是否在该路径数组里面 */
+function checkFilenameInPath(paths, filename) {
+  return paths.reduce((preVal, path) => {
+    return preVal || filename.includes(path);
+  }, false);
+}
+
 export default class Plugin {
   constructor(
     libraryName,
@@ -36,6 +43,8 @@ export default class Plugin {
     fileName,
     customName,
     transformToDefaultImport,
+    include,
+    exclude,
     types,
     index = 0,
   ) {
@@ -53,6 +62,8 @@ export default class Plugin {
       typeof transformToDefaultImport === 'undefined' ? true : transformToDefaultImport;
     this.types = types;
     this.pluginStateKey = `importPluginState${index}`;
+    this.include = include || [];
+    this.exclude = exclude || [];
   }
 
   getPluginState(state) {
@@ -63,7 +74,17 @@ export default class Plugin {
   }
 
   importMethod(methodName, file, pluginState) {
+    const filename = file.opts.filename;
+    // 当设置了exclude时, 不符合规则的文件名直接返回
+    if (this.exclude.length && checkFilenameInPath(this.exclude, filename)) {
+      return { ...pluginState.selectedMethods[methodName] };
+    }
+
     if (!pluginState.selectedMethods[methodName]) {
+      // 当设置了include时, 只有符合规则的文件名才需要转换
+      if (this.include.length && !checkFilenameInPath(this.include, filename)) {
+        return { ...pluginState.selectedMethods[methodName] };
+      }
       const { style, libraryDirectory } = this;
       const transformedMethodName = this.camel2UnderlineComponentName // eslint-disable-line
         ? transCamel(methodName, '_')
