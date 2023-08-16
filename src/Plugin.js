@@ -40,7 +40,7 @@ export default class Plugin {
     index = 0,
   ) {
     this.libraryName = libraryName;
-    this.libraryDirectory = typeof libraryDirectory === 'undefined' ? 'lib' : libraryDirectory;
+    this.libraryDirectory = typeof libraryDirectory === 'undefined' ? '' : libraryDirectory;
     this.camel2DashComponentName =
       typeof camel2DashComponentName === 'undefined' ? true : camel2DashComponentName;
     this.camel2UnderlineComponentName = camel2UnderlineComponentName;
