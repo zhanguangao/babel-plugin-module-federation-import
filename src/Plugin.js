@@ -42,7 +42,7 @@ export default class Plugin {
     this.libraryName = libraryName;
     this.libraryDirectory = typeof libraryDirectory === 'undefined' ? '' : libraryDirectory;
     this.camel2DashComponentName =
-      typeof camel2DashComponentName === 'undefined' ? true : camel2DashComponentName;
+      typeof camel2DashComponentName === 'undefined' ? false : camel2DashComponentName;
     this.camel2UnderlineComponentName = camel2UnderlineComponentName;
     this.style = style || false;
     this.styleLibraryDirectory = styleLibraryDirectory;
