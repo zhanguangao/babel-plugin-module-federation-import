@@ -6,7 +6,7 @@ function transCamel(_str, symbol) {
   // First match: QR
   // Second match: Code
   const cells = _str.match(/([A-Z]+(?=[A-Z]|$))|([A-Z]?[^A-Z]+)/g) || [];
-  return cells.map(c => c.toLowerCase()).join(symbol);
+  return cells.join(symbol);
 }
 
 function winPath(path) {
