@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { addNamed } from '@babel/helper-module-imports';
+import { addDefault } from '@babel/helper-module-imports';
 
 function winPath(path) {
   return path.replace(/\\/g, '/');
@@ -43,7 +43,10 @@ export default class Plugin {
       const path = winPath(
         join(this.transformLibraryName || this.libraryName, this.libraryDirectory, methodName),
       );
-      pluginState.selectedMethods[methodName] = addNamed(file.path, methodName, path);
+
+      pluginState.selectedMethods[methodName] = addDefault(file.path, path, {
+        nameHint: methodName,
+      });
     }
     return { ...pluginState.selectedMethods[methodName] };
   }
