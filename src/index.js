@@ -24,61 +24,14 @@ export default function ({ types }) {
       // Init plugin instances once.
       if (!plugins) {
         if (Array.isArray(opts)) {
-          plugins = opts.map(
-            (
-              {
-                libraryName,
-                libraryDirectory,
-                style,
-                styleLibraryDirectory,
-                customStyleName,
-                camel2DashComponentName,
-                camel2UnderlineComponentName,
-                fileName,
-                customName,
-                transformToDefaultImport,
-                include,
-                exclude,
-              },
-              index,
-            ) => {
-              assert(libraryName, 'libraryName should be provided');
-              return new Plugin(
-                libraryName,
-                libraryDirectory,
-                style,
-                styleLibraryDirectory,
-                customStyleName,
-                camel2DashComponentName,
-                camel2UnderlineComponentName,
-                fileName,
-                customName,
-                transformToDefaultImport,
-                include,
-                exclude,
-                types,
-                index,
-              );
-            },
-          );
+          plugins = opts.map(({ libraryName, libraryDirectory, include, exclude }, index) => {
+            assert(libraryName, 'libraryName should be provided');
+            return new Plugin(libraryName, libraryDirectory, include, exclude, types, index);
+          });
         } else {
           assert(opts.libraryName, 'libraryName should be provided');
           plugins = [
-            new Plugin(
-              opts.libraryName,
-              opts.libraryDirectory,
-              opts.style,
-              opts.styleLibraryDirectory,
-              opts.customStyleName,
-              opts.camel2DashComponentName,
-              opts.camel2UnderlineComponentName,
-              opts.fileName,
-              opts.customName,
-              opts.transformToDefaultImport,
-              opts.include,
-              opts.exclude,
-              types,
-            ),
+            new Plugin(opts.libraryName, opts.libraryDirectory, opts.include, opts.exclude, types),
           ];
         }
       }
