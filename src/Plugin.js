@@ -1,27 +1,8 @@
 import { join } from 'path';
-import { addSideEffect, addDefault, addNamed } from '@babel/helper-module-imports';
-
-function transCamel(_str, symbol) {
-  // e.g. QRCode
-  // First match: QR
-  // Second match: Code
-  const cells = _str.match(/([A-Z]+(?=[A-Z]|$))|([A-Z]?[^A-Z]+)/g) || [];
-  return cells.join(symbol);
-}
+import { addNamed } from '@babel/helper-module-imports';
 
 function winPath(path) {
   return path.replace(/\\/g, '/');
-}
-
-function normalizeCustomName(originCustomName) {
-  // If set to a string, treat it as a JavaScript source file path.
-  if (typeof originCustomName === 'string') {
-    // eslint-disable-next-line import/no-dynamic-require
-    const customNameExports = require(originCustomName);
-    return typeof customNameExports === 'function' ? customNameExports : customNameExports.default;
-  }
-
-  return originCustomName;
 }
 
 /** 判断该文件名是否在该路径数组里面 */
@@ -32,34 +13,9 @@ function checkFilenameInPath(paths, filename) {
 }
 
 export default class Plugin {
-  constructor(
-    libraryName,
-    libraryDirectory,
-    style,
-    styleLibraryDirectory,
-    customStyleName,
-    camel2DashComponentName,
-    camel2UnderlineComponentName,
-    fileName,
-    customName,
-    transformToDefaultImport,
-    include,
-    exclude,
-    types,
-    index = 0,
-  ) {
+  constructor(libraryName, libraryDirectory, include, exclude, types, index = 0) {
     this.libraryName = libraryName;
     this.libraryDirectory = typeof libraryDirectory === 'undefined' ? '' : libraryDirectory;
-    this.camel2DashComponentName =
-      typeof camel2DashComponentName === 'undefined' ? false : camel2DashComponentName;
-    this.camel2UnderlineComponentName = camel2UnderlineComponentName;
-    this.style = style || false;
-    this.styleLibraryDirectory = styleLibraryDirectory;
-    this.customStyleName = normalizeCustomName(customStyleName);
-    this.fileName = fileName || '';
-    this.customName = normalizeCustomName(customName);
-    this.transformToDefaultImport =
-      typeof transformToDefaultImport === 'undefined' ? true : transformToDefaultImport;
     this.types = types;
     this.pluginStateKey = `importPluginState${index}`;
     this.include = include || [];
@@ -75,48 +31,21 @@ export default class Plugin {
 
   importMethod(methodName, file, pluginState) {
     const filename = file.opts.filename;
-    // 当设置了exclude时, 不符合规则的文件名直接返回
-    if (this.exclude.length && checkFilenameInPath(this.exclude, filename)) {
-      return { ...pluginState.selectedMethods[methodName] };
+    let isHandle = false;
+
+    // 当设置了include时, 只有符合规则的文件名才需要转换
+    if (this.include.length && checkFilenameInPath(this.include, filename)) {
+      isHandle = true;
     }
 
-    if (!pluginState.selectedMethods[methodName]) {
-      // 当设置了include时, 只有符合规则的文件名才需要转换
-      if (this.include.length && !checkFilenameInPath(this.include, filename)) {
-        return { ...pluginState.selectedMethods[methodName] };
-      }
-      const { style, libraryDirectory } = this;
-      const transformedMethodName = this.camel2UnderlineComponentName // eslint-disable-line
-        ? transCamel(methodName, '_')
-        : this.camel2DashComponentName
-        ? transCamel(methodName, '-')
-        : methodName;
-      const path = winPath(
-        this.customName
-          ? this.customName(transformedMethodName, file)
-          : join(this.libraryName, libraryDirectory, transformedMethodName, this.fileName), // eslint-disable-line
-      );
-      pluginState.selectedMethods[methodName] = this.transformToDefaultImport // eslint-disable-line
-        ? addDefault(file.path, path, { nameHint: methodName })
-        : addNamed(file.path, methodName, path);
-      if (this.customStyleName) {
-        const stylePath = winPath(this.customStyleName(transformedMethodName, file));
-        addSideEffect(file.path, `${stylePath}`);
-      } else if (this.styleLibraryDirectory) {
-        const stylePath = winPath(
-          join(this.libraryName, this.styleLibraryDirectory, transformedMethodName, this.fileName),
-        );
-        addSideEffect(file.path, `${stylePath}`);
-      } else if (style === true) {
-        addSideEffect(file.path, `${path}/style`);
-      } else if (style === 'css') {
-        addSideEffect(file.path, `${path}/style/css`);
-      } else if (typeof style === 'function') {
-        const stylePath = style(path, file);
-        if (stylePath) {
-          addSideEffect(file.path, stylePath);
-        }
-      }
+    // 当设置了exclude时, 不符合规则的文件名直接返回
+    if (this.exclude.length && checkFilenameInPath(this.exclude, filename)) {
+      isHandle = false;
+    }
+
+    if (!pluginState.selectedMethods[methodName] && isHandle) {
+      const path = winPath(join(this.libraryName, this.libraryDirectory, methodName));
+      pluginState.selectedMethods[methodName] = addNamed(file.path, methodName, path);
     }
     return { ...pluginState.selectedMethods[methodName] };
   }
