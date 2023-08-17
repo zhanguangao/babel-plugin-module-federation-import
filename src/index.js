@@ -24,14 +24,31 @@ export default function ({ types }) {
       // Init plugin instances once.
       if (!plugins) {
         if (Array.isArray(opts)) {
-          plugins = opts.map(({ libraryName, libraryDirectory, include, exclude }, index) => {
-            assert(libraryName, 'libraryName should be provided');
-            return new Plugin(libraryName, libraryDirectory, include, exclude, types, index);
-          });
+          plugins = opts.map(
+            ({ libraryName, transformLibraryName, libraryDirectory, include, exclude }, index) => {
+              assert(libraryName, 'libraryName should be provided');
+              return new Plugin(
+                libraryName,
+                transformLibraryName,
+                libraryDirectory,
+                include,
+                exclude,
+                types,
+                index,
+              );
+            },
+          );
         } else {
           assert(opts.libraryName, 'libraryName should be provided');
           plugins = [
-            new Plugin(opts.libraryName, opts.libraryDirectory, opts.include, opts.exclude, types),
+            new Plugin(
+              opts.libraryName,
+              opts.transformLibraryName,
+              opts.libraryDirectory,
+              opts.include,
+              opts.exclude,
+              types,
+            ),
           ];
         }
       }

@@ -13,8 +13,17 @@ function checkFilenameInPath(paths, filename) {
 }
 
 export default class Plugin {
-  constructor(libraryName, libraryDirectory, include, exclude, types, index = 0) {
+  constructor(
+    libraryName,
+    transformLibraryName,
+    libraryDirectory,
+    include,
+    exclude,
+    types,
+    index = 0,
+  ) {
     this.libraryName = libraryName;
+    this.transformLibraryName = transformLibraryName;
     this.libraryDirectory = typeof libraryDirectory === 'undefined' ? '' : libraryDirectory;
     this.types = types;
     this.pluginStateKey = `importPluginState${index}`;
