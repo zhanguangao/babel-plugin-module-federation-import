@@ -39,21 +39,10 @@ export default class Plugin {
   }
 
   importMethod(methodName, file, pluginState) {
-    const filename = file.opts.filename;
-    let isHandle = false;
-
-    // 当设置了include时, 只有符合规则的文件名才需要转换
-    if (this.include.length && checkFilenameInPath(this.include, filename)) {
-      isHandle = true;
-    }
-
-    // 当设置了exclude时, 不符合规则的文件名直接返回
-    if (this.exclude.length && checkFilenameInPath(this.exclude, filename)) {
-      isHandle = false;
-    }
-
-    if (!pluginState.selectedMethods[methodName] && isHandle) {
-      const path = winPath(join(this.libraryName, this.libraryDirectory, methodName));
+    if (!pluginState.selectedMethods[methodName]) {
+      const path = winPath(
+        join(this.transformLibraryName || this.libraryName, this.libraryDirectory, methodName),
+      );
       pluginState.selectedMethods[methodName] = addNamed(file.path, methodName, path);
     }
     return { ...pluginState.selectedMethods[methodName] };
@@ -111,6 +100,23 @@ export default class Plugin {
     this.getPluginState(state).pathsToRemove.forEach(p => !p.removed && p.remove());
   }
 
+  /** 判断文件是否符合规则 */
+  checkFilename(filename) {
+    if (!filename) {
+      return false;
+    }
+    // 当设置了include时, 只有符合规则的文件名才需要转换
+    if (this.include.length && !checkFilenameInPath(this.include, filename)) {
+      return false;
+    }
+
+    // 当设置了exclude时, 不符合规则的文件名直接返回
+    if (this.exclude.length && checkFilenameInPath(this.exclude, filename)) {
+      return false;
+    }
+    return true;
+  }
+
   ImportDeclaration(path, state) {
     const { node } = path;
 
@@ -121,7 +127,9 @@ export default class Plugin {
     const { libraryName } = this;
     const { types } = this;
     const pluginState = this.getPluginState(state);
-    if (value === libraryName) {
+    const filename = state.file?.opts?.filename;
+
+    if (value === libraryName && this.checkFilename(filename)) {
       node.specifiers.forEach(spec => {
         if (types.isImportSpecifier(spec)) {
           pluginState.specified[spec.local.name] = spec.imported.name;
