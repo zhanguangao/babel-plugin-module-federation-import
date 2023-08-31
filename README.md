@@ -1,11 +1,12 @@
 # babel-plugin-import
 
+已重构，重构后的项目为[babel-plugin-custom-transform-imports](https://github.com/zhanguangao/babel-plugin-custom-transform-imports)
+
 Modular import plugin for babel, compatible with [antd](https://github.com/ant-design/ant-design), [antd-mobile](https://github.com/ant-design/ant-design-mobile), lodash, [material-ui](http://material-ui.com/), and so on.
 
-[![NPM version](https://img.shields.io/npm/v/babel-plugin-import.svg?style=flat)](https://npmjs.org/package/babel-plugin-import)
-[![Build Status](https://img.shields.io/travis/ant-design/babel-plugin-import.svg?style=flat)](https://travis-ci.org/ant-design/babel-plugin-import)
+[![NPM version](https://img.shields.io/npm/v/babel-plugin-import.svg?style=flat)](https://npmjs.org/package/babel-plugin-import) [![Build Status](https://img.shields.io/travis/ant-design/babel-plugin-import.svg?style=flat)](https://travis-ci.org/ant-design/babel-plugin-import)
 
-----
+---
 
 ## Why babel-plugin-import
 
@@ -109,15 +110,16 @@ For Example:
 ```javascript
 [
   {
-    "libraryName": "antd",
-    "libraryDirectory": "lib",   // default: lib
-    "style": true
+    libraryName: 'antd',
+    libraryDirectory: 'lib', // default: lib
+    style: true,
   },
   {
-    "libraryName": "antd-mobile"
+    libraryName: 'antd-mobile',
   },
-]
+];
 ```
+
 `Options` can't be an array in babel@7+, but you can add plugins with name to support multiple dependencies.
 
 For Example:
@@ -139,32 +141,33 @@ For Example:
 If option style is a `Function`, `babel-plugin-import` will auto import the file which filepath equal to the function return value. This is useful for the components library developers.
 
 e.g.
-- ``["import", { "libraryName": "antd", "style": (name) => `${name}/style/2x` }]``: import js and css modularly & css file path is `ComponentName/style/2x`
+
+- `` ["import", { "libraryName": "antd", "style": (name) => `${name}/style/2x` }] ``: import js and css modularly & css file path is `ComponentName/style/2x`
 
 If a component has no style, you can use the `style` function to return a `false` and the style will be ignored.
 
 e.g.
+
 ```js
 [
-  "import",
-    {
-      "libraryName": "antd",
-      "style": (name: string, file: Object) => {
-        if(name === 'antd/lib/utils'){
-          return false;
-        }
-        return `${name}/style/2x`;
+  'import',
+  {
+    libraryName: 'antd',
+    style: (name: string, file: Object) => {
+      if (name === 'antd/lib/utils') {
+        return false;
       }
-    }
-]
+      return `${name}/style/2x`;
+    },
+  },
+];
 ```
 
 #### styleLibraryDirectory
 
 - `["import", { "libraryName": "element-ui", "styleLibraryDirectory": "lib/theme-chalk" }]`: import js and css modularly
 
-If `styleLibraryDirectory` is provided (default `null`), it will be used to form style file path,
-`style` will be ignored then. e.g.
+If `styleLibraryDirectory` is provided (default `null`), it will be used to form style file path, `style` will be ignored then. e.g.
 
 ```javascript
 {
@@ -204,21 +207,21 @@ And finally, you can use `customName` to customize each name parsing:
 
 ```js
 [
-  "import",
-    {
-      "libraryName": "antd",
-      "customName": (name: string, file: object) => {
-        const filename = file.opts.filename;
-        if (name === 'TimePicker'){
-          return 'antd/lib/custom-time-picker';
-        }
-        if (filename.indexOf('/path/to/my/different.js') >= 0) {
-          return 'antd/lib/custom-name';
-        }
-        return `antd/lib/${name}`;
+  'import',
+  {
+    libraryName: 'antd',
+    customName: (name: string, file: object) => {
+      const filename = file.opts.filename;
+      if (name === 'TimePicker') {
+        return 'antd/lib/custom-time-picker';
       }
-    }
-]
+      if (filename.indexOf('/path/to/my/different.js') >= 0) {
+        return 'antd/lib/custom-name';
+      }
+      return `antd/lib/${name}`;
+    },
+  },
+];
 ```
 
 So this result is:
@@ -235,12 +238,12 @@ So we also support specifying the customName with a JavaScript source file path:
 
 ```js
 [
-  "import",
-    {
-      "libraryName": "antd",
-      "customName": require('path').resolve(__dirname, './customName.js')
-    }
-]
+  'import',
+  {
+    libraryName: 'antd',
+    customName: require('path').resolve(__dirname, './customName.js'),
+  },
+];
 ```
 
 The `customName.js` looks like this:
